@@ -47,7 +47,7 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center gap-6 pt-8">
+      <div className="relative z-10 w-full max-w-[1500px] px-8 flex flex-col items-center gap-6 pt-8">
         <WidgetManager isEditMode={isEditMode} />
       </div>
     </div>

@@ -15,15 +15,14 @@ const Clock = () => {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
-      className="flex flex-col items-center"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center p-6 bg-slate-800/30 border border-slate-700/50 rounded-3xl backdrop-blur-md shadow-lg group hover:bg-slate-800/40 transition-colors w-full h-full min-h-[140px]"
     >
-      <h1 className="text-8xl md:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70 drop-shadow-sm">
+      <h1 className="text-6xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/70 drop-shadow-sm">
         {hours}:{minutes}
       </h1>
-      <p className="mt-4 text-xl md:text-2xl text-slate-300 capitalize font-medium tracking-wide">
+      <p className="mt-2 text-lg text-slate-300 capitalize font-medium tracking-wide">
         {dateStr}
       </p>
     </motion.div>
