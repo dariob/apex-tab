@@ -193,7 +193,7 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
   };
 
   return (
-    <div className="w-full max-w-4xl mt-8 pb-12">
+    <div className="w-full pb-4">
       <ReactSortable
         list={sections}
         setList={setSections}
@@ -206,10 +206,10 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
         {sections.map(section => (
           <div 
             key={section.id} 
-            className="bg-slate-800/30 border border-slate-700/50 rounded-3xl p-5 shadow-lg backdrop-blur-md transition-colors hover:bg-slate-800/40"
+            className="bg-slate-800/30 border border-slate-700/50 rounded-3xl p-4 shadow-lg backdrop-blur-md transition-colors hover:bg-slate-800/40"
           >
             {/* Section Header */}
-            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-3 ${isEditMode ? 'border-b border-slate-700/50' : ''}`}>
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-2 ${isEditMode ? 'border-b border-slate-700/50' : ''}`}>
               <div className="flex items-center gap-3">
                 {isEditMode && (
                   <div 
@@ -279,7 +279,7 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
               animation={200}
               disabled={!isEditMode}
               ghostClass="opacity-30"
-              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 min-h-[5rem]"
+              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 min-h-[4rem]"
             >
               {section.links.map((link) => (
                 <div
@@ -287,7 +287,7 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
                   className={`relative group rounded-2xl h-full ${isEditMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
                 >
                   {/* The actual Link card */}
-                  <div className="flex flex-col items-center justify-center p-4 h-full rounded-2xl bg-slate-800/60 border border-slate-700/50 shadow-sm transition-all duration-300 text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-500/50 hover:-translate-y-1">
+                  <div className="flex flex-col items-center justify-center p-3 h-full rounded-2xl bg-slate-800/60 border border-slate-700/50 shadow-sm transition-all duration-300 text-slate-300 hover:text-white hover:bg-slate-700 hover:border-slate-500/50 hover:-translate-y-1">
                     {/* Delete Button */}
                     {isEditMode && (
                       <button
@@ -324,11 +324,11 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
                       className={`flex flex-col items-center justify-center w-full h-full ${isEditMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
                       draggable={false} // Prevent default browser link dragging
                     >
-                      <div className="w-10 h-10 mb-3 rounded-xl flex items-center justify-center bg-slate-900/50 group-hover:bg-slate-900 overflow-hidden transition-colors shadow-inner relative">
+                      <div className="w-8 h-8 mb-2 rounded-lg flex items-center justify-center bg-slate-900/50 group-hover:bg-slate-900 overflow-hidden transition-colors shadow-inner relative">
                         <img 
                           src={`https://icons.duckduckgo.com/ip3/${getHostname(link.url)}.ico`} 
                           alt={link.name}
-                          className="w-6 h-6 object-contain z-10"
+                          className="w-5 h-5 object-contain z-10"
                           draggable={false}
                           onError={(e) => {
                             const img = e.target as HTMLImageElement;

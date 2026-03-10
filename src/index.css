@@ -8,5 +8,5 @@ body {
   padding: 0;
   background-color: #0f172a;
   color: white;
-  overflow: hidden; /* Prevent scrolling for the start page */
+  overflow-x: hidden;
 }

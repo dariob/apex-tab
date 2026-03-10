@@ -1,15 +1,13 @@
 import { motion } from 'framer-motion';
 import { Mail, Settings } from 'lucide-react';
 import { useState } from 'react';
-import Clock from './components/Clock';
-import SearchBar from './components/SearchBar';
-import QuickLinks from './components/QuickLinks';
+import WidgetManager from './components/WidgetManager';
 
 function App() {
   const [isEditMode, setIsEditMode] = useState(false);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col items-center pt-[5vh] pb-12 bg-slate-900 relative overflow-x-hidden font-sans">
       {/* Animated Background Gradients */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <motion.div 
@@ -49,10 +47,8 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full max-w-4xl px-6 flex flex-col items-center gap-12">
-        <Clock />
-        <SearchBar />
-        <QuickLinks isEditMode={isEditMode} />
+      <div className="relative z-10 w-full max-w-6xl px-6 flex flex-col items-center gap-6 pt-8">
+        <WidgetManager isEditMode={isEditMode} />
       </div>
     </div>
   );
