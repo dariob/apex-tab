@@ -38,18 +38,21 @@ const WIDGET_CATALOG: { type: WidgetType; name: string; defaultSettings: Record<
   { type: 'quicklinks', name: 'Link Veloci', defaultSettings: {} },
   { type: 'greeting', name: 'Saluto Personalizzato', defaultSettings: { text: 'Ciao Dario!' } },
   { type: 'quote', name: 'Aforisma Random', defaultSettings: {} },
-  { type: 'weather', name: 'Meteo Locale', defaultSettings: { city: 'Roma' } },
+  { type: 'weather', name: 'Meteo Locale', defaultSettings: { city: 'Roma', showHourly: true, showDaily: false } },
 ];
 
-const getWidgetSpan = (type: WidgetType) => {
+const getWidgetFlex = (type: WidgetType) => {
   switch (type) {
-    case 'greeting': return 'md:col-span-4 lg:col-span-12';
-    case 'search': return 'md:col-span-4 lg:col-span-12'; 
-    case 'clock': return 'md:col-span-2 lg:col-span-4';
-    case 'weather': return 'md:col-span-2 lg:col-span-4';
-    case 'quote': return 'md:col-span-4 lg:col-span-4';
-    case 'quicklinks': return 'md:col-span-4 lg:col-span-12';
-    default: return 'md:col-span-4 lg:col-span-12';
+    case 'greeting': 
+    case 'search': 
+    case 'quicklinks': 
+      return 'w-full';
+    case 'clock': 
+    case 'weather': 
+    case 'quote': 
+      return 'flex-grow basis-[280px] min-w-[280px] lg:basis-[350px] lg:min-w-[350px]';
+    default: 
+      return 'w-full';
   }
 };
 
@@ -124,9 +127,11 @@ const WidgetManager = ({ isEditMode }: { isEditMode: boolean }) => {
   };
 
   const renderWidgetWrapper = (widget: WidgetInstance, context: 'center' | 'sidebar') => {
-    let containerClass = "w-full relative group flex flex-col justify-center h-full";
+    let containerClass = "relative group flex flex-col justify-center h-full";
     if (context === 'center') {
-      containerClass += ` ${getWidgetSpan(widget.type)}`;
+      containerClass += ` ${getWidgetFlex(widget.type)}`;
+    } else {
+      containerClass += " w-full";
     }
 
     return (
@@ -202,7 +207,7 @@ const WidgetManager = ({ isEditMode }: { isEditMode: boolean }) => {
             animation={200}
             disabled={!isEditMode}
             handle=".widget-drag-handle"
-            className={`w-full grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-6 items-stretch auto-rows-min mx-auto ${isEditMode && layout.center.length === 0 ? 'min-h-[200px]' : ''}`}
+            className={`w-full flex flex-wrap gap-6 items-stretch content-start mx-auto ${isEditMode && layout.center.length === 0 ? 'min-h-[200px]' : ''}`}
           >
             {layout.center.map(w => renderWidgetWrapper(w, 'center'))}
           </ReactSortable>
@@ -306,7 +311,11 @@ const WidgetManager = ({ isEditMode }: { isEditMode: boolean }) => {
                   if (editingWidget.type === 'greeting') {
                     saveWidgetSettings(editingWidget.id, { text: fd.get('text') as string });
                   } else if (editingWidget.type === 'weather') {
-                    saveWidgetSettings(editingWidget.id, { city: fd.get('city') as string });
+                    saveWidgetSettings(editingWidget.id, { 
+                      city: fd.get('city') as string,
+                      showHourly: fd.get('showHourly') === 'on',
+                      showDaily: fd.get('showDaily') === 'on'
+                    });
                   }
                 }} 
                 className="flex flex-col gap-4"
@@ -324,15 +333,35 @@ const WidgetManager = ({ isEditMode }: { isEditMode: boolean }) => {
                 )}
 
                 {editingWidget.type === 'weather' && (
-                  <input
-                    name="city"
-                    type="text"
-                    defaultValue={editingWidget.settings.city as string}
-                    placeholder="Es. Roma, Milano..."
-                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 focus:border-blue-500 rounded-xl text-white text-base focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
-                    autoFocus
-                    required
-                  />
+                  <div className="flex flex-col gap-3">
+                    <input
+                      name="city"
+                      type="text"
+                      defaultValue={editingWidget.settings.city as string}
+                      placeholder="Es. Roma, Milano, 00100..."
+                      className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 focus:border-blue-500 rounded-xl text-white text-base focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                      autoFocus
+                      required
+                    />
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        name="showHourly" 
+                        defaultChecked={editingWidget.settings.showHourly as boolean} 
+                        className="w-5 h-5 text-blue-500 bg-slate-900 border-slate-700 rounded focus:ring-blue-500 focus:ring-offset-slate-800"
+                      />
+                      <span className="text-slate-300 group-hover:text-white transition-colors">Mostra Previsioni Orarie</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group flex-1">
+                      <input 
+                        type="checkbox" 
+                        name="showDaily" 
+                        defaultChecked={editingWidget.settings.showDaily as boolean} 
+                        className="w-5 h-5 text-blue-500 bg-slate-900 border-slate-700 rounded focus:ring-blue-500 focus:ring-offset-slate-800"
+                      />
+                      <span className="text-slate-300 group-hover:text-white transition-colors">Mostra Previsioni 5 Giorni</span>
+                    </label>
+                  </div>
                 )}
                 
                 <button

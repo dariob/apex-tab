@@ -74,7 +74,7 @@ const Quote = () => {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="max-w-2xl mx-auto flex flex-col items-center justify-center text-center p-6 bg-slate-800/30 border border-slate-700/50 rounded-3xl backdrop-blur-md shadow-lg group hover:bg-slate-800/40 transition-colors w-full h-full min-h-[140px]"
+      className="flex flex-col items-center justify-center text-center p-6 bg-slate-800/30 border border-slate-700/50 rounded-3xl backdrop-blur-md shadow-lg group hover:bg-slate-800/40 transition-colors w-full h-full min-h-[140px]"
     >
       <QuoteIcon className="w-8 h-8 text-blue-400/50 mb-4 group-hover:text-blue-400 transition-colors" />
       <p className="text-lg md:text-xl text-slate-200 font-medium italic mb-4 leading-relaxed">
