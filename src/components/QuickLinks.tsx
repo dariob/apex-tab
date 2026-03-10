@@ -29,6 +29,14 @@ const defaultSections: Section[] = [
   }
 ];
 
+const getHostname = (url: string) => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+};
+
 const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
   const [sections, setSections] = useState<Section[]>(() => {
     const savedSections = localStorage.getItem('quicklinks_sections');
@@ -64,6 +72,10 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
 
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editTitleVal, setEditTitleVal] = useState('');
+  const [isFetchingUrl, setIsFetchingUrl] = useState(false);
+
+  const [editingLink, setEditingLink] = useState<{ sectionId: string; linkId: string } | null>(null);
+  const [editLinkVal, setEditLinkVal] = useState('');
 
   useEffect(() => {
     localStorage.setItem('quicklinks_sections', JSON.stringify(sections));
@@ -97,18 +109,62 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
     setEditingSection(null);
   };
 
-  const handleAddLink = (e: React.FormEvent) => {
+  const handleSaveEditLink = () => {
+    if (editingLink && editLinkVal.trim()) {
+      setSections(prev => prev.map(s => {
+        if (s.id === editingLink.sectionId) {
+          return {
+            ...s,
+            links: s.links.map(l => l.id === editingLink.linkId ? { ...l, name: editLinkVal.trim() } : l)
+          };
+        }
+        return s;
+      }));
+    }
+    setEditingLink(null);
+  };
+
+  const handleAddLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!linkName.trim() || !linkUrl.trim() || !addingToSection) return;
+    if (!linkUrl.trim() || !addingToSection) return;
 
     let finalUrl = linkUrl.trim();
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = 'https://' + finalUrl;
     }
 
+    let finalName = linkName.trim();
+    
+    if (!finalName) {
+      setIsFetchingUrl(true);
+      try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(finalUrl)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const match = data.contents.match(/<title[^>]*>([^<]+)<\/title>/i);
+          if (match && match[1]) {
+            finalName = match[1].trim();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch title", err);
+      }
+      
+      if (!finalName) {
+        try {
+          const urlObj = new URL(finalUrl);
+          const parts = urlObj.hostname.replace('www.', '').split('.');
+          finalName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+        } catch {
+          finalName = finalUrl;
+        }
+      }
+      setIsFetchingUrl(false);
+    }
+
     const newLink: LinkItem = {
       id: Date.now().toString(),
-      name: linkName.trim(),
+      name: finalName,
       url: finalUrl,
     };
 
@@ -243,26 +299,77 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
                       </button>
                     )}
 
+                    {/* Edit Link Button */}
+                    {isEditMode && editingLink?.linkId !== link.id && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setEditingLink({ sectionId: section.id, linkId: link.id });
+                          setEditLinkVal(link.name);
+                        }}
+                        className="absolute -top-2 -left-2 p-1.5 rounded-full bg-emerald-500/90 text-white opacity-0 group-hover:opacity-100 hover:bg-emerald-500 transition-all scale-75 group-hover:scale-100 z-10 shadow-lg"
+                        title="Rinomina Link"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                    )}
+
                     {/* Open Link (clicking the card content, but avoiding drag issues) */}
                     <a 
-                      href={link.url}
-                      className="flex flex-col items-center justify-center w-full h-full"
+                      href={isEditMode ? undefined : link.url}
+                      onClick={(e) => {
+                        if (isEditMode) e.preventDefault();
+                      }}
+                      className={`flex flex-col items-center justify-center w-full h-full ${isEditMode ? 'cursor-grab active:cursor-grabbing' : ''}`}
                       draggable={false} // Prevent default browser link dragging
                     >
-                      <div className="w-10 h-10 mb-3 rounded-xl flex items-center justify-center bg-slate-900/50 group-hover:bg-slate-900 overflow-hidden transition-colors shadow-inner">
+                      <div className="w-10 h-10 mb-3 rounded-xl flex items-center justify-center bg-slate-900/50 group-hover:bg-slate-900 overflow-hidden transition-colors shadow-inner relative">
                         <img 
-                          src={`https://www.google.com/s2/favicons?sz=64&domain_url=${link.url}`} 
+                          src={`https://icons.duckduckgo.com/ip3/${getHostname(link.url)}.ico`} 
                           alt={link.name}
-                          className="w-6 h-6 object-contain"
+                          className="w-6 h-6 object-contain z-10"
                           draggable={false}
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                            const img = e.target as HTMLImageElement;
+                            if (img.dataset.triedFallback !== 'true') {
+                              img.dataset.triedFallback = 'true';
+                              try {
+                                const urlObj = new URL(link.url);
+                                img.src = `${urlObj.origin}/favicon.ico`;
+                              } catch {
+                                img.style.opacity = '0';
+                                img.nextElementSibling?.classList.remove('hidden');
+                              }
+                            } else {
+                              img.style.opacity = '0';
+                              img.nextElementSibling?.classList.remove('hidden');
+                            }
                           }}
                         />
                         <LinkIcon className="w-5 h-5 text-slate-400 hidden absolute" />
                       </div>
-                      <span className="text-sm font-medium truncate w-full text-center px-1 text-slate-300 group-hover:text-white">{link.name}</span>
+                      
+                      {editingLink?.linkId === link.id ? (
+                        <input
+                          type="text"
+                          value={editLinkVal}
+                          onChange={(e) => setEditLinkVal(e.target.value)}
+                          onBlur={handleSaveEditLink}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEditLink();
+                            if (e.key === 'Escape') setEditingLink(null);
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          autoFocus
+                          className="bg-slate-900/80 border border-emerald-500/50 text-white px-1 py-0.5 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors text-xs font-medium w-full text-center truncate relative z-20"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium truncate w-full text-center px-1 text-slate-300 group-hover:text-white relative z-10">{link.name}</span>
+                      )}
                     </a>
                   </div>
                 </div>
@@ -324,10 +431,9 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
                   type="text"
                   value={linkName}
                   onChange={(e) => setLinkName(e.target.value)}
-                  placeholder="Nome (es. Netflix)"
+                  placeholder="Nome (lascia vuoto per auto-generare)"
                   className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 focus:border-blue-500 rounded-xl text-white text-base focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
                   autoFocus
-                  required
                 />
                 <input
                   type="text"
@@ -339,9 +445,10 @@ const QuickLinks = ({ isEditMode }: { isEditMode: boolean }) => {
                 />
                 <button
                   type="submit"
-                  className="mt-2 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-blue-500/25"
+                  disabled={isFetchingUrl}
+                  className={`mt-2 w-full py-3 ${isFetchingUrl ? 'bg-blue-800 cursor-wait' : 'bg-blue-600 hover:bg-blue-500 hover:shadow-blue-500/25'} text-white font-medium rounded-xl transition-all shadow-lg`}
                 >
-                  Salva Collegamento
+                  {isFetchingUrl ? 'Recupero Titolo...' : 'Salva Collegamento'}
                 </button>
               </form>
             </motion.div>
