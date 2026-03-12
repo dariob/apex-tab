@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Cloud, Sun, Moon, CloudRain, CloudSnow, CloudLightning, Wind } from 'lucide-react';
+import { useGlobal } from '../context/GlobalContext';
 
 export interface WeatherSettings {
   city: string;
@@ -41,25 +42,27 @@ const getWeatherIcon = (code: number, isDay: number = 1, className = "w-12 h-12"
     return isDay ? <Sun className={`${className} text-amber-400 drop-shadow-sm`} /> 
                  : <Moon className={`${className} text-slate-300 drop-shadow-sm`} />;
   }
-  if (code === 2 || code === 3) return <Cloud className={`${className} text-slate-300 drop-shadow-sm`} />;
-  if (code >= 51 && code <= 67) return <CloudRain className={`${className} text-blue-400 drop-shadow-sm`} />;
-  if (code >= 71 && code <= 82) return <CloudSnow className={`${className} text-sky-200 drop-shadow-sm`} />;
+  if (code === 2 || code === 3 || code === 45 || code === 48) return <Cloud className={`${className} text-slate-300 drop-shadow-sm`} />;
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return <CloudRain className={`${className} text-blue-400 drop-shadow-sm`} />;
+  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return <CloudSnow className={`${className} text-sky-200 drop-shadow-sm`} />;
   if (code >= 95 && code <= 99) return <CloudLightning className={`${className} text-yellow-500 drop-shadow-sm`} />;
   return <Wind className={`${className} text-slate-400 drop-shadow-sm`} />;
 };
 
 const getWeatherDescription = (code: number) => {
-  if (code === 0) return 'Sereno';
-  if (code === 1 || code === 2 || code === 3) return 'Nuvoloso';
-  if (code >= 51 && code <= 67) return 'Pioggia';
-  if (code >= 71 && code <= 82) return 'Neve';
+  if (code === 0 || code === 1) return 'Sereno';
+  if (code === 2 || code === 3) return 'Nuvoloso';
+  if (code === 45 || code === 48) return 'Nebbia';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'Pioggia';
+  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 'Neve';
   if (code >= 95 && code <= 99) return 'Temporale';
-  return 'Mix/Vento';
+  return 'Misto/Vento';
 };
 
 const Weather = ({ settings }: WeatherProps) => {
   const [data, setData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setWeatherState } = useGlobal();
 
   // default to true if undefined
   const showHourly = settings.showHourly !== false;
@@ -79,6 +82,7 @@ const Weather = ({ settings }: WeatherProps) => {
           const now = Date.now();
           if (now - parsed.timestamp < CACHE_MINUTES * 60 * 1000) {
             setData(parsed);
+            setWeatherState({ weatherCode: parsed.condition, isDay: parsed.is_day });
             setLoading(false);
             return;
           }
@@ -149,6 +153,7 @@ const Weather = ({ settings }: WeatherProps) => {
         };
 
         setData(newData);
+        setWeatherState({ weatherCode: current.weathercode, isDay: current.is_day });
         localStorage.setItem(CACHE_KEY, JSON.stringify(newData));
 
       } catch (error) {
