@@ -1,5 +1,7 @@
 {
   "name": "dariob-chrome-start-page",
+  "author": "Dario Barilà <me@dariob.com>",
+  "license": "MIT",
   "private": true,
   "version": "0.0.0",
   "type": "module",
