@@ -14,11 +14,11 @@ Elevate your browser with a premium start page featuring breathtaking design, sm
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/dariob-chrome-start-page.git
+   git clone https://github.com/dariob/apex-tab.git
    ```
 2. Navigate to the directory:
    ```bash
-   cd dariob-chrome-start-page
+   cd apex-tab
    ```
 3. Install dependencies:
    ```bash
